@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"log"
-	"os"
-	"os/signal"
 
 	"github.com/go-telegram/bot"
 )
@@ -16,9 +14,7 @@ func main() {
 		panic("ChatID is not provided!")
 	}
 
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer cancel()
-
+	ctx := context.Background()
 	opts := []bot.Option{}
 
 	b, err := bot.New(config.Token, opts...)
@@ -27,7 +23,5 @@ func main() {
 	}
 
 	log.Println("Ready. New reports will be ready in 15 seconds...")
-
-	go startBMKG(ctx, b)
-	b.Start(ctx)
+	startBMKG(ctx, b)
 }
