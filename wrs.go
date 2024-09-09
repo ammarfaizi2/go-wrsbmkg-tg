@@ -12,6 +12,8 @@ import (
 	"time"
 )
 
+var WIB = time.FixedZone("WIB", +7*60*60)
+
 func startBMKG(ctx context.Context, b *bot.Bot) {
 	p := wrsbmkg.Penerima{
 		Gempa:    make(chan wrsbmkg.DataJSON),
@@ -56,10 +58,13 @@ listener:
 		case r := <-p.Realtime:
 			realtime := helper.ParseRealtime(r)
 			t, _ := time.Parse(time.DateTime, realtime.Time)
-			ft := t.Format(time.Kitchen)
+			tl := t.In(WIB)
+			date := tl.Format(time.DateOnly)
+			ft := tl.Format(time.Kitchen)
 			msg := fmt.Sprintf(
 				"*%s*\n"+
 					"`"+
+					"Tanggal   : %s\n"+
 					"Waktu     : %s\n"+
 					"Magnitudo : M%.1f\n"+
 					"Kedalaman : %.1f KM\n"+
@@ -67,6 +72,7 @@ listener:
 					"Status    : %s"+
 					"`",
 				realtime.Place,
+				date,
 				ft,
 				realtime.Magnitude,
 				realtime.Depth,
@@ -77,7 +83,7 @@ listener:
 			lat, _ := strconv.ParseFloat(realtime.Coordinates[1].(string), 64)
 			long, _ := strconv.ParseFloat(realtime.Coordinates[0].(string), 64)
 
-			venueTitle := fmt.Sprintf("M%.1f, %s", realtime.Magnitude, ft)
+			venueTitle := fmt.Sprintf("M%.1f, %s %s", realtime.Magnitude, date, ft)
 
 			m, err := b.SendVenue(ctx, &bot.SendVenueParams{
 				ChatID:              config.ChatID,
