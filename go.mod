@@ -1,4 +1,4 @@
-module codeberg.org/Yonle/go-wrsbmkg/telegram
+module codeberg.org/Yonle/go-wrsbmkg-telegram
 
 go 1.23.0
 
