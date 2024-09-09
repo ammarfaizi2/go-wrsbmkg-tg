@@ -18,7 +18,7 @@ func startBMKG(ctx context.Context, b *bot.Bot) {
 		Realtime: make(chan wrsbmkg.DataJSON),
 		Narasi:   make(chan string),
 
-		Interval: time.Second * 1,
+		Interval: time.Second * 15,
 		API_URL:  wrsbmkg.DEFAULT_API_URL,
 
 		HTTP_Client: http.Client{
