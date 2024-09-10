@@ -24,6 +24,7 @@ func sendWarning(ctx context.Context, b *bot.Bot, shakemapURL string, msg string
 		})
 
 		if err != nil {
+			time.Sleep(time.Second*15)
 			continue
 		}
 
