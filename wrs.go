@@ -14,6 +14,23 @@ import (
 
 var WIB = time.FixedZone("WIB", +7*60*60)
 
+func sendWarning(ctx context.Context, b *bot.Bot, shakemapURL string, msg string) {
+	for {
+		_, err := b.SendPhoto(ctx, &bot.SendPhotoParams{
+			ChatID:    config.ChatID,
+			Caption:   msg,
+			ParseMode: models.ParseModeMarkdownV1,
+			Photo:     &models.InputFileString{Data: shakemapURL},
+		})
+
+		if err != nil {
+			continue
+		}
+
+		break
+	}
+}
+
 func startBMKG(ctx context.Context, b *bot.Bot) {
 	p := wrsbmkg.Penerima{
 		Gempa:    make(chan wrsbmkg.DataJSON),
@@ -46,15 +63,7 @@ listener:
 
 			shakemapURL := "https://bmkg-content-inatews.storage.googleapis.com/" + gempa.Shakemap
 
-			_, err := b.SendPhoto(ctx, &bot.SendPhotoParams{
-				ChatID:    config.ChatID,
-				Caption:   msg,
-				ParseMode: models.ParseModeMarkdownV1,
-				Photo:     &models.InputFileString{Data: shakemapURL},
-			})
-			if err != nil {
-				fmt.Println(err)
-			}
+			go sendWarning(ctx, b, shakemapURL, msg)
 		case r := <-p.Realtime:
 			realtime := helper.ParseRealtime(r)
 			t, _ := time.Parse(time.DateTime, realtime.Time)
