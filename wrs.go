@@ -120,10 +120,11 @@ listener:
 				continue listener
 			}
 		case n := <-p.Narasi:
+			narasi := helper.CleanNarasi(n)
+
 			_, err := b.SendMessage(ctx, &bot.SendMessageParams{
 				ChatID:    config.ChatID,
-				Text:      n,
-				ParseMode: models.ParseModeHTML,
+				Text:      narasi,
 			})
 
 			if err != nil {
