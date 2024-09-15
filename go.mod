@@ -3,7 +3,7 @@ module codeberg.org/Yonle/go-wrsbmkg-telegram
 go 1.23.0
 
 require (
-	codeberg.org/Yonle/go-wrsbmkg v1.0.5
+	codeberg.org/Yonle/go-wrsbmkg v1.1.0
 	github.com/go-telegram/bot v1.7.2
 	github.com/goccy/go-yaml v1.12.0
 )
