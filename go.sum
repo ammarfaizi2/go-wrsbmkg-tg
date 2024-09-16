@@ -1,5 +1,5 @@
-codeberg.org/Yonle/go-wrsbmkg v1.1.3 h1:o3z6er014PB/ZN8TbowCixAgjrFK0V3Wej3XvQXh8IY=
-codeberg.org/Yonle/go-wrsbmkg v1.1.3/go.mod h1:CnirGZrhKIn4vxcYj9JmuHrNM5gPlATIpd6LsZHerbA=
+codeberg.org/Yonle/go-wrsbmkg v1.1.4 h1:ct5NIMsKrEIvcMtod1g1rbvzw8rZtSd9hIQK8XtlPhE=
+codeberg.org/Yonle/go-wrsbmkg v1.1.4/go.mod h1:CnirGZrhKIn4vxcYj9JmuHrNM5gPlATIpd6LsZHerbA=
 github.com/fatih/color v1.10.0 h1:s36xzo75JdqLaaWoiEHk767eHiwo0598uUxyfiPkDsg=
 github.com/fatih/color v1.10.0/go.mod h1:ELkj/draVOlAH/xkhN6mQ50Qd0MPOk5AAr3maGEBuJM=
 github.com/go-playground/locales v0.13.0 h1:HyWk6mgj5qFqCT5fjGBuRArbVDfE4hi8+e8ceBS/t7Q=
