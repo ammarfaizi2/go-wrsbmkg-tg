@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
-	"net/http"
 	"strconv"
 	"time"
 )
@@ -24,7 +23,7 @@ func sendWarning(ctx context.Context, b *bot.Bot, shakemapURL string, msg string
 		})
 
 		if err != nil {
-			time.Sleep(time.Second*15)
+			time.Sleep(time.Second * 15)
 			continue
 		}
 
@@ -33,18 +32,7 @@ func sendWarning(ctx context.Context, b *bot.Bot, shakemapURL string, msg string
 }
 
 func startBMKG(ctx context.Context, b *bot.Bot) {
-	p := wrsbmkg.Penerima{
-		Gempa:    make(chan wrsbmkg.DataJSON),
-		Realtime: make(chan wrsbmkg.DataJSON),
-		Narasi:   make(chan string),
-
-		Interval: time.Second * 15,
-		API_URL:  wrsbmkg.DEFAULT_API_URL,
-
-		HTTP_Client: http.Client{
-			Timeout: time.Second * 30,
-		},
-	}
+	p := wrsbmkg.BuatPenerima()
 
 	p.MulaiPolling(ctx)
 
@@ -123,8 +111,8 @@ listener:
 			narasi := helper.CleanNarasi(n)
 
 			_, err := b.SendMessage(ctx, &bot.SendMessageParams{
-				ChatID:    config.ChatID,
-				Text:      narasi,
+				ChatID: config.ChatID,
+				Text:   narasi,
 			})
 
 			if err != nil {
