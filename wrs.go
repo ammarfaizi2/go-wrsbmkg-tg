@@ -48,9 +48,43 @@ listener:
 			}
 
 			go sendPhoto(ctx, b, gempa.Shakemap, msg)
+
+			// Below code is for handling Tsunami warning.
 			go sendPhoto(ctx, b, gempa.WZMap, "")
 			go sendPhoto(ctx, b, gempa.TTMap, "")
 			go sendPhoto(ctx, b, gempa.SSHMap, "")
+
+			var zonaPeringatanText string
+
+			for _, area := range gempa.WZAreas {
+				zonaPeringatanText += fmt.Sprintf(
+					"- %s: %s, %s\n",
+					area.Level,
+					area.Province,
+					area.District,
+				)
+			}
+
+			if len(zonaPeringatanText) > 0 {
+				zonaPeringatanText += fmt.Sprintf(
+					"\n*Instruksi*\n1. %s\n2. %s\n3. %s",
+					gempa.Instruction1,
+					gempa.Instruction2,
+					gempa.Instruction3,
+				)
+
+				zonaPeringatanText = "*Zona-Zona Peringatan*\n" + zonaPeringatanText
+
+				fmt.Println(zonaPeringatanText)
+
+				if _, err := b.SendMessage(ctx, &bot.SendMessageParams{
+					ChatID:    config.ChatID,
+					Text:      zonaPeringatanText,
+					ParseMode: models.ParseModeMarkdownV1,
+				}); err != nil {
+					log.Printf("bot: Failed to send zonaPeringatanText: %s", err)
+				}
+			}
 		case r := <-p.Realtime:
 			realtime := helper.ParseRealtime(r)
 			t, _ := time.Parse(time.DateTime, realtime.Time)
