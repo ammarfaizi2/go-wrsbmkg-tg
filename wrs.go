@@ -7,29 +7,13 @@ import (
 	"fmt"
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
+	"log"
 	"strconv"
 	"time"
 )
 
 var WIB = time.FixedZone("WIB", +7*60*60)
-
-func sendWarning(ctx context.Context, b *bot.Bot, shakemapURL string, msg string) {
-	for {
-		_, err := b.SendPhoto(ctx, &bot.SendPhotoParams{
-			ChatID:    config.ChatID,
-			Caption:   msg,
-			ParseMode: models.ParseModeMarkdownV1,
-			Photo:     &models.InputFileString{Data: shakemapURL},
-		})
-
-		if err != nil {
-			time.Sleep(time.Second * 15)
-			continue
-		}
-
-		break
-	}
-}
+var currentEventID string
 
 func startBMKG(ctx context.Context, b *bot.Bot) {
 	p := wrsbmkg.BuatPenerima()
@@ -41,6 +25,8 @@ listener:
 		select {
 		case g := <-p.Gempa:
 			gempa := helper.ParseGempa(g)
+			currentEventID = gempa.EventID
+
 			msg := fmt.Sprintf(
 				"*%s*\n\n%s\n\n%s\n\n%s\n\n%s\n",
 				gempa.Subject,
@@ -50,15 +36,21 @@ listener:
 				gempa.Instruction,
 			)
 
-			shakemapURL := "https://bmkg-content-inatews.storage.googleapis.com/" + gempa.Shakemap
+			log.Printf("wrs: Got event ID: %s", gempa.EventID)
+			log.Printf(gempa.Headline)
 
 			// send headline first. As the shakemap isn't really ready at the time of the incident.
-			b.SendMessage(ctx, &bot.SendMessageParams{
+			if _, err := b.SendMessage(ctx, &bot.SendMessageParams{
 				ChatID: config.ChatID,
 				Text:   gempa.Headline,
-			})
+			}); err != nil {
+				log.Printf("bot: Failed to send headline: %s", err)
+			}
 
-			go sendWarning(ctx, b, shakemapURL, msg)
+			go sendPhoto(ctx, b, gempa.Shakemap, msg)
+			go sendPhoto(ctx, b, gempa.WZMap, "")
+			go sendPhoto(ctx, b, gempa.TTMap, "")
+			go sendPhoto(ctx, b, gempa.SSHMap, "")
 		case r := <-p.Realtime:
 			realtime := helper.ParseRealtime(r)
 			t, _ := time.Parse(time.DateTime, realtime.Time)
@@ -66,7 +58,7 @@ listener:
 			date := tl.Format(time.DateOnly)
 			ft := tl.Format(time.Kitchen)
 			msg := fmt.Sprintf(
-				"*[M%.1f]* %s\n"+
+				"*M%.1f* %s\n"+
 					"`"+
 					"Tanggal   : %s\n"+
 					"Waktu     : %s\n"+
@@ -83,6 +75,8 @@ listener:
 				realtime.Status,
 			)
 
+			log.Printf("wrs: Got realtime info: M%.1f %s", realtime.Magnitude, realtime.Place)
+
 			lat, _ := strconv.ParseFloat(realtime.Coordinates[1].(string), 64)
 			long, _ := strconv.ParseFloat(realtime.Coordinates[0].(string), 64)
 
@@ -98,7 +92,7 @@ listener:
 			})
 
 			if err != nil {
-				fmt.Println(err)
+				log.Printf("bot: Failed to send venue: %s", err)
 				continue listener
 			}
 
@@ -109,11 +103,12 @@ listener:
 				DisableNotification: true,
 				ReplyParameters:     &models.ReplyParameters{MessageID: m.ID},
 			}); err != nil {
-				fmt.Println(err)
+				log.Printf("bot: Failed to send realtime info message: %s", err)
 				continue listener
 			}
 		case n := <-p.Narasi:
 			narasi := helper.CleanNarasi(n)
+			log.Println("wrs: Got narasi")
 
 			_, err := b.SendMessage(ctx, &bot.SendMessageParams{
 				ChatID: config.ChatID,
@@ -121,7 +116,7 @@ listener:
 			})
 
 			if err != nil {
-				fmt.Println(err)
+				log.Printf("bot: Failed to send narasi: %s", err)
 			}
 		}
 	}
