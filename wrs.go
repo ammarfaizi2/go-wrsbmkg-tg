@@ -58,10 +58,12 @@ listener:
 
 			for _, area := range gempa.WZAreas {
 				zonaPeringatanText += fmt.Sprintf(
-					"- %s: %s, %s\n",
+					"- %s: %s, %s (estimasi waktu tiba: %s %s)\n",
 					area.Level,
 					area.Province,
 					area.District,
+					area.Date,
+					area.Time,
 				)
 			}
 
