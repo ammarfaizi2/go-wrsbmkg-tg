@@ -52,6 +52,12 @@ listener:
 
 			shakemapURL := "https://bmkg-content-inatews.storage.googleapis.com/" + gempa.Shakemap
 
+			// send headline first. As the shakemap isn't really ready at the time of the incident.
+			b.SendMessage(ctx, &bot.SendMessageParams{
+				ChatID: config.ChatID,
+				Text:   gempa.Headline,
+			})
+
 			go sendWarning(ctx, b, shakemapURL, msg)
 		case r := <-p.Realtime:
 			realtime := helper.ParseRealtime(r)
@@ -60,19 +66,18 @@ listener:
 			date := tl.Format(time.DateOnly)
 			ft := tl.Format(time.Kitchen)
 			msg := fmt.Sprintf(
-				"*%s*\n"+
+				"*[M%.1f]* %s\n"+
 					"`"+
 					"Tanggal   : %s\n"+
 					"Waktu     : %s\n"+
-					"Magnitudo : M%.1f\n"+
 					"Kedalaman : %.1f KM\n"+
 					"Fase      : %v\n"+
 					"Status    : %s"+
 					"`",
+				realtime.Magnitude,
 				realtime.Place,
 				date,
 				ft,
-				realtime.Magnitude,
 				realtime.Depth,
 				realtime.Phase,
 				realtime.Status,
