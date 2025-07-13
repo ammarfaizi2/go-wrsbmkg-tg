@@ -1,3 +1,8 @@
 ---
 BOT_TOKEN:
 CHAT_ID:
+
+# Below is for filtering. It's optional.
+# FILTER_REGION is case insensitive, and must be set in lowercase
+MIN_MAG: 0.00
+FILTER_REGION:

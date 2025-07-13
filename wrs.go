@@ -1,15 +1,17 @@
 package main
 
 import (
-	"codeberg.org/Yonle/go-wrsbmkg"
-	"codeberg.org/Yonle/go-wrsbmkg/helper"
 	"context"
 	"fmt"
-	"github.com/go-telegram/bot"
-	"github.com/go-telegram/bot/models"
 	"log"
 	"strconv"
+	"strings"
 	"time"
+
+	"codeberg.org/Yonle/go-wrsbmkg"
+	"codeberg.org/Yonle/go-wrsbmkg/helper"
+	"github.com/go-telegram/bot"
+	"github.com/go-telegram/bot/models"
 )
 
 var WIB = time.FixedZone("WIB", +7*60*60)
@@ -26,6 +28,16 @@ listener:
 		case g := <-p.Gempa:
 			gempa := helper.ParseGempa(g)
 			currentEventID = gempa.EventID
+
+			if config.MinMag >= gempa.Magnitude {
+				return
+			}
+
+			if len(config.FilterRegion) > 0 && strings.Contains(
+				strings.ToLower(gempa.Area), config.FilterRegion,
+			) {
+				return
+			}
 
 			msg := fmt.Sprintf(
 				"*%s*\n\n%s\n\n%s\n\n%s\n\n%s\n",
@@ -89,6 +101,17 @@ listener:
 			}
 		case r := <-p.Realtime:
 			realtime := helper.ParseRealtime(r)
+
+			if config.MinMag >= realtime.Magnitude {
+				return
+			}
+
+			if len(config.FilterRegion) > 0 && strings.Contains(
+				strings.ToLower(realtime.Place), config.FilterRegion,
+			) {
+				return
+			}
+
 			t, _ := time.Parse(time.DateTime, realtime.Time)
 			tl := t.In(WIB)
 			date := tl.Format(time.DateOnly)

@@ -7,8 +7,10 @@ import (
 )
 
 var config struct {
-	Token  string `yaml:"BOT_TOKEN"`
-	ChatID int    `yaml:"CHAT_ID"`
+	Token        string  `yaml:"BOT_TOKEN"`
+	ChatID       int     `yaml:"CHAT_ID"`
+	MinMag       float64 `yaml:"MIN_MAG"`
+	FilterRegion string  `yaml:"FILTER_REGION"`
 }
 
 func ReadConfig(filename string) {
