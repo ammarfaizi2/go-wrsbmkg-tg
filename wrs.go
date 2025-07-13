@@ -129,7 +129,7 @@ listener:
 				continue listener
 			}
 
-			if len(config.FilterRegion) > 0 && strings.Contains(
+			if len(config.FilterRegion) > 0 && !strings.Contains(
 				strings.ToLower(gempa.Area), config.FilterRegion,
 			) {
 				continue listener
@@ -206,7 +206,7 @@ listener:
 				continue listener
 			}
 
-			if len(config.FilterRegion) > 0 && strings.Contains(
+			if len(config.FilterRegion) > 0 && !strings.Contains(
 				strings.ToLower(realtime.Place), config.FilterRegion,
 			) {
 				continue listener
