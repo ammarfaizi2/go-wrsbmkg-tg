@@ -30,13 +30,13 @@ listener:
 			currentEventID = gempa.EventID
 
 			if config.MinMag >= gempa.Magnitude {
-				return
+				continue listener
 			}
 
 			if len(config.FilterRegion) > 0 && strings.Contains(
 				strings.ToLower(gempa.Area), config.FilterRegion,
 			) {
-				return
+				continue listener
 			}
 
 			msg := fmt.Sprintf(
@@ -103,13 +103,13 @@ listener:
 			realtime := helper.ParseRealtime(r)
 
 			if config.MinMag >= realtime.Magnitude {
-				return
+				continue listener
 			}
 
 			if len(config.FilterRegion) > 0 && strings.Contains(
 				strings.ToLower(realtime.Place), config.FilterRegion,
 			) {
-				return
+				continue listener
 			}
 
 			t, _ := time.Parse(time.DateTime, realtime.Time)
