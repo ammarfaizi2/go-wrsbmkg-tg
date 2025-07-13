@@ -6,3 +6,11 @@ CHAT_ID:
 # FILTER_REGION is case insensitive, and must be set in lowercase
 MIN_MAG: 0.00
 FILTER_REGION:
+
+# Optional, a directory to save sent messages.
+#
+# If set, the bot will remember sent messages by saving them to a
+# file. Good for preventing duplicate messages on restart.
+#
+# If the directory does not exist, it will be created.
+MSG_MEMORY_DIR: ./data/sent_messages

@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/goccy/go-yaml"
 	"os"
+
+	"github.com/goccy/go-yaml"
 )
 
 var config struct {
@@ -11,6 +12,7 @@ var config struct {
 	ChatID       int     `yaml:"CHAT_ID"`
 	MinMag       float64 `yaml:"MIN_MAG"`
 	FilterRegion string  `yaml:"FILTER_REGION"`
+	MsgMemoryDir string  `yaml:"MSG_MEMORY_DIR"`
 }
 
 func ReadConfig(filename string) {
