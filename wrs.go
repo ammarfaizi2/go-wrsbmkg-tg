@@ -70,12 +70,53 @@ func IsNewMessage(m *sync.Mutex, data string) bool {
 	return true
 }
 
+func ScanAndDeleteOldMessages(m *sync.Mutex) {
+	m.Lock()
+	defer m.Unlock()
+	files, err := os.ReadDir(config.MsgMemoryDir)
+	if err != nil {
+		log.Printf("Failed to read message memory directory: %s", err)
+		return
+	}
+
+	for _, file := range files {
+		st, err := file.Info()
+		if err != nil {
+			log.Printf("Failed to get file info: %s", err)
+			continue
+		}
+
+		if time.Since(st.ModTime()) <= 7*24*time.Hour {
+			continue
+		}
+
+		fpath := fmt.Sprintf("%s/%s", config.MsgMemoryDir, file.Name())
+		if err := os.Remove(fpath); err != nil {
+			log.Printf("Failed to delete old message memory file: %s", err)
+		} else {
+			log.Printf("Deleted old message memory file: %s", fpath)
+		}
+	}
+}
+
+func MemDirHouseKeeping(m *sync.Mutex) {
+	for {
+		log.Println("wrs: Starting message memdir housekeeping")
+		ScanAndDeleteOldMessages(m)
+		log.Println("wrs: Finished message memdir housekeeping, will be back in 3 hours")
+		time.Sleep(3 * time.Hour)
+	}
+}
+
 func startBMKG(ctx context.Context, b *bot.Bot) {
 	p := wrsbmkg.BuatPenerima()
 
 	p.MulaiPolling(ctx)
 
 	mu := sync.Mutex{}
+	if len(config.MsgMemoryDir) > 0 {
+		go MemDirHouseKeeping(&mu)
+	}
 
 listener:
 	for {
