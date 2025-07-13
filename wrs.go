@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"crypto/md5"
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"codeberg.org/Yonle/go-wrsbmkg"
@@ -17,10 +20,62 @@ import (
 var WIB = time.FixedZone("WIB", +7*60*60)
 var currentEventID string
 
+/**
+ * A simple file-based memory to keep track of sent messages with
+ * the help of filesystem. Hash the message, check if the file exists
+ * in the memory directory, if it exists, skip the message. If it does
+ * not exist, create the file to remember the message.
+ *
+ * @param mutex		A mutex to protect the memory directory.
+ * @param data		The message data to be checked and remembered.
+ * @return		true if the message should be sent
+ *			false if it should be skipped.
+ */
+func IsNewMessage(m *sync.Mutex, data string) bool {
+	/*
+	 * Always send the message if the memory directory is not set.
+	 */
+	if len(config.MsgMemoryDir) == 0 {
+		return true
+	}
+
+	md5sum := md5.Sum([]byte(data))
+	fpath := fmt.Sprintf("%s/%x", config.MsgMemoryDir, md5sum)
+
+	m.Lock()
+	defer m.Unlock()
+	/*
+	 * If the file exists, skip the message. We've already sent it.
+	 */
+	if _, err := os.Stat(fpath); err == nil {
+		log.Printf("wrs: Skipping message, already sent: %x", md5sum)
+		return false
+	}
+
+	if err := os.MkdirAll(config.MsgMemoryDir, 0755); err != nil && !os.IsExist(err) {
+		log.Printf("Failed to create message memory directory: %s", err)
+		return true
+	}
+
+	/*
+	 * Create the file to remember the message.
+	 */
+	f, err := os.Create(fpath)
+	if err != nil {
+		log.Printf("Failed to create message memory file: %s", err)
+		return true
+	}
+	f.Close()
+
+	return true
+}
+
 func startBMKG(ctx context.Context, b *bot.Bot) {
 	p := wrsbmkg.BuatPenerima()
 
 	p.MulaiPolling(ctx)
+
+	mu := sync.Mutex{}
 
 listener:
 	for {
@@ -50,6 +105,10 @@ listener:
 
 			log.Printf("wrs: Got event ID: %s", gempa.EventID)
 			log.Printf(gempa.Headline)
+
+			if !IsNewMessage(&mu, msg) {
+				continue listener
+			}
 
 			// send headline first. As the shakemap isn't really ready at the time of the incident.
 			if _, err := b.SendMessage(ctx, &bot.SendMessageParams{
@@ -134,6 +193,10 @@ listener:
 				realtime.Status,
 			)
 
+			if !IsNewMessage(&mu, msg) {
+				continue listener
+			}
+
 			log.Printf("wrs: Got realtime info: M%.1f %s", realtime.Magnitude, realtime.Place)
 
 			lat, _ := strconv.ParseFloat(realtime.Coordinates[1].(string), 64)
@@ -168,6 +231,10 @@ listener:
 		case n := <-p.Narasi:
 			narasi := helper.CleanNarasi(n)
 			log.Println("wrs: Got narasi")
+
+			if !IsNewMessage(&mu, narasi) {
+				continue listener
+			}
 
 			_, err := b.SendMessage(ctx, &bot.SendMessageParams{
 				ChatID: config.ChatID,
