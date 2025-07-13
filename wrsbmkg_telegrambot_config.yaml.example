@@ -3,9 +3,19 @@ BOT_TOKEN:
 CHAT_ID:
 
 # Below is for filtering. It's optional.
-# FILTER_REGION is case insensitive, and must be set in lowercase
-MIN_MAG: 0.00
-FILTER_REGION:
+# Each entry of FILTER_REGIONS is case insensitive.
+
+# Uncomment the following to enable the filter
+#MIN_MAG: 0.00
+#FILTER_REGIONS:
+#- Indonesia
+#- Sulawesi
+#- Savu
+#- Banda
+#- Flores
+#- Papua
+#- Molucca
+#- Timor
 
 # Optional, a directory to save sent messages.
 #

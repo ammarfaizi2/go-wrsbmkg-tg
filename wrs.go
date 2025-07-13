@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -129,9 +128,7 @@ listener:
 				continue listener
 			}
 
-			if len(config.FilterRegion) > 0 && !strings.Contains(
-				strings.ToLower(gempa.Area), config.FilterRegion,
-			) {
+			if !checkFilter(gempa.Area) { // if it didn't get pass
 				continue listener
 			}
 
@@ -206,9 +203,7 @@ listener:
 				continue listener
 			}
 
-			if len(config.FilterRegion) > 0 && !strings.Contains(
-				strings.ToLower(realtime.Place), config.FilterRegion,
-			) {
+			if !checkFilter(realtime.Place) {
 				continue listener
 			}
 
